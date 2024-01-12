@@ -90,7 +90,7 @@ def move_file(file: Path, category: str, root_dir: Path) -> None:
     print(category)
     # if not new_path.exists():
     file = file.replace(new_path)
-    print(file.name, target_dir)
+    print(file.name, root_dir)
     # if file.is_file() and file.suffix in [".zip", ".gz", ".tar"]:
     #     if file.is_file() and file.suffix in [
     #         ".zip",

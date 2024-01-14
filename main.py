@@ -84,9 +84,7 @@ def main():
         elif args.note_command == 'delete_all_notes':
             note_manager.clear_data()
 
-        
-        
-
+    
 if __name__ == '__main__':
     main()
 

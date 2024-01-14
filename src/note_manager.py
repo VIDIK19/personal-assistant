@@ -1,25 +1,3 @@
-"""
- В цьому модулі реалізовано два класи, Note та NoteData.
-
- 1. Note
-    При створенні екземпляра приймає один аргумент - текст нотатки.
-    Кожен екземпляр має унікальний ID, за яким зберігається у класі NoteData.
-    Має методи add_tag, edit_tag, edit_info.
-    ! Методи edit_tag та edit_info ще будуть дороблятися - хочу, щоб у консоль виводило 
-        наявний текст, який можна редагувати, а не писати текст наново.
-    Магічний метод __str__ виводить у консоль таблицю для зручного відображення нотатки.
- 2. NoteData(UserDict)
-    При ініціалізації підвантажує дані з файлу в папці database, якщо такий є.
-    Метод add_note приймає за аргумент екземпляр класу Note та зберігає його у словнику {note_id: Note}
-    Метод id_search приймає за аргумент ID нотатки та повертає нотатку у вигляді таблиці
-    Метод tag_search приймає строку та шукає співпадіння з тегами нотаток у БД (повертає у вигляді таблиці для БД)
-    Метод delete_note видаляє нотатку за ID.
-    Метод clear_data очищує БД (файл теж чистить)
-    
-"""
-
-
-
 from tabulate import tabulate
 from collections import UserDict
 import pickle
@@ -32,6 +10,51 @@ project_root = os.path.dirname(os.path.dirname(current_file_path))
 DATA_PATH = f'{project_root}\database\\notes.pkl'
 
 
+class NoteManager:
+    def __init__(self):
+        self.data = NoteData()
+
+    def show_data(self):
+        return print(self.data.table(self.data))
+    
+    def clear_data(self):
+        self.data.clear_data()
+    
+    def add_note(self, info:str):
+        note = Note(info)
+        self.data[note.note_id] = note
+        self.data.save_data()
+    
+    def edit_info(self, note_id:int, new_info:str):
+        self.data[note_id].info = new_info
+
+    def add_tag(self, note_id:int, tag:str):
+        note = self.data[note_id]
+        note.tags.append(tag)
+        self.data.save_data()
+
+    def delete_note(self, note_id:int):
+        del self.data[note_id]
+        self.data.save_data()
+
+    def open_note(self, note_id:int) -> str(tabulate):
+        return print(self.data[note_id].table())
+    
+    def edit_tag(self, note_id:int, tag_index:int, new_tag:str): # tag and info through console
+        self.data[note_id].tags[tag_index] = new_tag
+        self.data.save_data()
+
+    def search_tag(self, search_tag:str) -> str(tabulate):
+        matches = {}
+        for note in self.data.values():
+            for tag in note.tags:
+                if tag.startswith(search_tag):
+                    matches[note.note_id] = note
+
+        return print(NoteData.table(matches))
+                
+        
+
 class Note:
     note_counter = 0
 
@@ -42,19 +65,9 @@ class Note:
         self.info = info
         
         
-
-    def add_tag(self, tag:str) -> None:
-        self.tags.append(tag)
-
-    def edit_tag(self, old_tag_ind, new_tag:str) -> None:
-        self.tags[old_tag_ind] = new_tag
-    
-    def edit_info(self, new_info:str) -> None:
-        self.info = new_info
-
-
     def table(self) -> str:
-        header = [f'              Note ID:{self.note_id}']
+        header = [f'              Note ID: {self.note_id}']
+
 
         field_1 = ['Tags',]
         text_block = ''
@@ -69,8 +82,8 @@ class Note:
         lst_for_info = [] 
 
         while width_of_string < len(self.info):
-            lst_for_info.append(self.info[width_of_string: width_of_string + 40])
-            width_of_string += 40
+            lst_for_info.append(self.info[width_of_string: width_of_string + 70])
+            width_of_string += 70
         
         info = "\n".join(lst_for_info)
         field_2.append(info)
@@ -79,53 +92,33 @@ class Note:
         
         return str(table)
 
+
 class NoteData(UserDict):
-    def __init__(self):
+    def __init__(self, data=None):
         super().__init__()
+        if not data is None:
+            self.data = data
         self.load_data()
 
-    def add_note(self, note:Note) -> None:
-        self.data[note.note_id] = note
-        self.save_data()
-    
-    def id_search(self, note_id: int) -> str:
-        if note_id in self.data:
-            return self.data[note_id].table()
-
-            
-
-    def tag_search(self, tag:str) -> str:
-        search_dict = {}
-        for note in self.data.values():
-            for el in note.tags:
-                if el.startswith(tag):
-                    search_dict[note.note_id] = note
-
+    @staticmethod
+    def table(data):
         headers = ["Note ID", "Tags", "Info"]
         fields = []
 
-        for note in search_dict.values():
+        for note in data.values():
             tag_block = ''
             for tag in note.tags:
+                
                 tag_block += "> " + tag + "\n"
 
-            info_block = note.info[:20] + "\n" + "..."
+            info_block = note.info[:40] + "\n" + "..."
             field = [note.note_id, tag_block, info_block]
 
             fields.append(field)
         
         table = tabulate(fields, headers=headers, tablefmt='grid')
-        return (table)
-
-
-    def delete_note(self, note_id) ->None:
-        del self.data[note_id]
-        self.save_data()
-
-    def open_note(self, note_id) -> str:
-        return self.data[note_id].table()
-
-
+        return str(table)
+    
     def save_data(self):
         with open(DATA_PATH, 'wb') as file:
             pickle.dump(self.data, file)
@@ -146,21 +139,43 @@ class NoteData(UserDict):
         self.data = {}
         self.save_data()
     
+    def __str__(self):
+        return self.table(self.data)
 
-    def data_table(self):
-        headers = ["Note ID", "Tags", "Info"]
-        fields = []
 
-        for note in self.data.values():
-            tag_block = ''
-            for tag in note.tags:
-                tag_block += "> " + tag + "\n"
+#   add_note_example
+# note_manager = NoteManager()
+# note_manager.add_note("HEllo, this is an example of the note that you can create with my module."\
+#                         "Good Luck!")
+# note_manager.add_note("This is the second note")
+# note_manager.show_data()
+# note_manager.clear_data()
 
-            info_block = note.info[:20] + "\n" + "..."
-            field = [note.note_id, tag_block, info_block]
+#   add_tag_example
 
-            fields.append(field)
-        
-        table = tabulate(fields, headers=headers, tablefmt='grid')
-        return table
+# note_manager.add_tag(1, "This is my tag")
+# note_manager.add_tag(1, "This is second tag")
+# note_manager.add_tag(2, "Tag of the second note")
+# note_manager.show_data()
+# note_manager.clear_data()
+
+#   delete_note_example
+
+# note_manager.delete_note(1)
+# note_manager.show_data()
+# note_manager.clear_data()
+
+#   open_note_example
+
+# note_manager.open_note(2)
+# note_manager.clear_data()
+
+#   edit_tag_example
+# note_manager.edit_tag(1, 0, "This is a new tag for first note")
+# note_manager.show_data()
+# note_manager.clear_data()
+
+#   search_tag_exampe
+# note_manager.search_tag("This")
+# note_manager.clear_data()
 

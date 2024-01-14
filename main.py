@@ -48,8 +48,45 @@ def main():
         file_manager.sort_folder(Path(args.path))
         print(f"Файли у папці {args.path} відсортовано.")
 
-    # Тут можна додати логіку для note_manager
-    
+    elif args.command == 'note':
+
+        note_manager = NoteManager()
+
+        if args.note_command == 'add':
+            note_manager.add_note(args.content)
+            print("Нотатка додана.")
+
+        elif args.note_command == 'add_tag':
+            # note_manager.add_tag(?, ?)
+            pass
+
+        elif args.note_command == 'edit_tag':
+            # note_manager.edit_tag(?, ?, ?) !
+            pass
+        
+        elif args.note_command == 'edit_info':
+            # note_manager.edit_info(?, ?)
+            pass
+        
+        elif args.note_command == 'search_tag':
+            print(f"Всі співпадіння за тегом {args.content}:")
+            note_manager.search_tag(args.content)
+        
+        elif args.note_command == 'show_all':
+            note_manager.show_data()
+        
+        elif args.note_command == 'open_note':
+            note_manager.open_note(args.content)
+
+        elif args.note_command == 'delete_note':
+            note_manager.delete_note(args.content)
+
+        elif args.note_command == 'delete_all_notes':
+            note_manager.clear_data()
+
+        
+        
+
 if __name__ == '__main__':
     main()
 

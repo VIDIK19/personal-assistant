@@ -12,24 +12,40 @@ from note_manager import Note, NoteData
 
 
 if __name__ == '__main__':
-    my_data = NoteData()
-    print(my_data)
+    pass
+    #   add_note_example
+    # note_manager = NoteManager()
+    # note_manager.add_note("HEllo, this is an example of the note that you can create with my module."\
+    #                         "Good Luck!")
+    # note_manager.add_note("This is the second note")
+    # note_manager.show_data()
+    # note_manager.clear_data()
 
-    note = Note("So cool to read about everyone's home tradition they"\
-                "miss the most! I'm from England but I've been living"\
-                "in the States for five years and the thing I miss the most"\
-                "is Bonfire Night on November 5th.")
+    #   add_tag_example
 
-    note.add_tag("Some story")
-    note.add_tag('tag example')
+    # note_manager.add_tag(1, "This is my tag")
+    # note_manager.add_tag(1, "This is second tag")
+    # note_manager.add_tag(2, "Tag of the second note")
+    # note_manager.show_data()
+    # note_manager.clear_data()
 
-    note_2 = Note("This is the second note!")
-    note_2.add_tag("Tag 2")
+    #   delete_note_example
 
-    my_data.add_note(note)
-    my_data.add_note(note_2)
+    # note_manager.delete_note(1)
+    # note_manager.show_data()
+    # note_manager.clear_data()
 
+    #   open_note_example
 
-    print(my_data.id_search(1))
-    print(my_data.tag_search("Tag"))
-    my_data.clear_data()
+    # note_manager.open_note(2)
+    # note_manager.clear_data()
+
+    #   edit_tag_example
+    # note_manager.edit_tag(1, 0, "This is a new tag for first note")
+    # note_manager.show_data()
+    # note_manager.clear_data()
+
+    #   search_tag_exampe
+    # note_manager.search_tag("This")
+    # note_manager.clear_data()
+

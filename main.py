@@ -63,6 +63,35 @@ def main():
                     print('Всі нотатки видалено')
                     note_manager.show_data()
             
+            elif command_arg == 'edit':
+                print('Виберіть нотатку для редагування')
+                note_id = int(input('>>>ID нотатки:'))
+                note_manager.open_note(note_id)
+                print('Що хочете відредагувати? (info/tag)')
+                user_choice = input('>>>')
+                if user_choice == 'info':
+                    new_info = input('>>>Новий текст нотатки:')
+                    note_manager.edit_info(note_id, new_info)
+                elif user_choice == 'tag':
+                    tag_index = int(input(">>>Введіть індекс тегу для редагування (з верху від 0):"))
+                    new_tag = input('>>>Нова назва тегу:')
+                    note_manager.edit_tag(note_id,tag_index, new_tag)
+                else: 
+                    continue
+                print('Нотатку відредаговано')
+                note_manager.open_note(note_id)
+
+            elif command_arg == 'open':
+                note_manager.show_data()
+                print("Виберіть нотатку (ID)")
+                note_id = int(input(">>>"))
+                note_manager.open_note(note_id)
+
+            elif command_arg == 'search':
+                print('Впишіть тег для пошуку нотаток (можна перші літери)')
+                note_tag = input('>>>')
+                note_manager.search_tag(note_tag)
+
             else: 
                 print('Нема такої команди')
             
@@ -70,6 +99,6 @@ def main():
             print('Нема такого менеджера')
         # Це маленька чатсина функціоналу - просто приклад
             
-            
+
 if __name__ == '__main__':
     main()     

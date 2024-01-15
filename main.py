@@ -16,7 +16,7 @@ def main():
 
         if command == '':
             continue
-        
+
         # завершення програми
         if command == "exit":
             break
@@ -62,8 +62,14 @@ def main():
                     note_manager.clear_data()
                     print('Всі нотатки видалено')
                     note_manager.show_data()
-                
-
+            
+            else: 
+                print('Нема такої команди')
+            
+        else: 
+            print('Нема такого менеджера')
         # Це маленька чатсина функціоналу - просто приклад
+            
+            
 if __name__ == '__main__':
     main()     

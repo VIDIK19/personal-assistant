@@ -38,20 +38,3 @@ def sort_folder(path: Path) -> None:
         if element.is_file():
             category = get_categories(element)
             move_file(element, category, path)
-
-
-def main():
-    try:
-        path = Path(sys.argv[1])
-    except IndexError:
-        return "No path to folder"
-    if not path.exists():
-        return "Folder does not exists"
-
-    sort_folder(path)
-
-    return "All ok"
-
-
-if __name__ == "__main__":
-    main()

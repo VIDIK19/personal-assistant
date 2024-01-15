@@ -10,19 +10,25 @@ def main():
 
         # створення списку слів із юзер-інпута
         lst_of_args = user_input.lower().strip().split(" ")
-
+        
         # перше слово з юзер інпута - команда, наступні слова - аргументи
         command = lst_of_args[0]
 
+        if command == '':
+            continue
+        
         # завершення програми
         if command == "exit":
             break
+        
 
         try:
+
             command_arg = lst_of_args[1]
             #Обробка випадку коли користувач не ввів аргумент для command
+
         except IndexError:
-            print('Команду для мендежеру нотаток не передано')
+            print('Команду для мендежеру не передано')
             continue
         
 
@@ -33,6 +39,7 @@ def main():
                 # Додає нотатку в БД 
                 note_manager.add_note(info)
                 print('Нотатку зроблено')
+                note_manager.show_data()
                 
         
             elif command_arg == 'add_tag':
@@ -43,10 +50,20 @@ def main():
                 # Додаємо тег в нотатку
                 note_manager.add_tag(int(note_id), tag)
                 print("Тег додано")
+                note_manager.show_data()
 
             elif command_arg == 'data':
                 note_manager.show_data()
             
+            elif command_arg == 'clear':
+                print("Ви впевнені, що хочете видалити всі нотатки? Напишіть (yes/так)")
+                user_input_1 = input('>>>')
+                if user_input_1 in ('yes', 'так'):
+                    note_manager.clear_data()
+                    print('Всі нотатки видалено')
+                    note_manager.show_data()
+                
+
         # Це маленька чатсина функціоналу - просто приклад
 if __name__ == '__main__':
     main()     

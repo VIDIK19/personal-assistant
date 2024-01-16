@@ -7,6 +7,8 @@ def main():
     note_manager = NoteManager()
     contact_manager = ContactManager()
 
+    contact_manager.create_table()
+
     while True:
         user_input = input(">>>")
 

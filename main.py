@@ -95,7 +95,7 @@ def main():
                 note_manager.search_tag(note_tag)
 
             else:
-                print("Нема такої команди")
+                print("Нема такої команди для менеджеру нотаток")
 
         elif command == 'contact':           
             if command_arg == 'add':
@@ -160,6 +160,8 @@ def main():
                     print('Файли відсортовано')
                 else:
                     print(f'Папки за шляхом {path_str} не існує або це не папка.')
+            else: 
+                print('Нема такої команди для менеджера файлів')
         else:
             print("Нема такого менеджера")
         # Це маленька чатсина функціоналу - просто приклад

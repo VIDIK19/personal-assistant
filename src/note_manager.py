@@ -50,7 +50,8 @@ class NoteManager:
             for tag in note.tags:
                 if tag.startswith(search_tag):
                     matches[note.note_id] = note
-
+        if len(matches.keys()) == 0:
+            return print("Нотаток за таким тегом не знайдено")
         return print(NoteData.table(matches))
                 
         

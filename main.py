@@ -8,7 +8,6 @@ def main():
     contact_manager = ContactManager()
 
     contact_manager.create_table()
-
     while True:
         user_input = input(">>>")
 
@@ -20,10 +19,9 @@ def main():
 
         if command == "":
             continue
-
         # завершення програми
         if command == "exit":
-            break
+            print("Bye!")
 
         try:
             command_arg = lst_of_args[1]
@@ -32,7 +30,7 @@ def main():
         except IndexError:
             print("Команду для мендежеру не передано")
             continue
-
+        
         if command == "note":
             if command_arg == "create":
                 # Запрашуємо ввести текст нотатки
@@ -43,14 +41,19 @@ def main():
                 note_manager.show_data()
 
             elif command_arg == "add_tag":
-                # Запрашуємо id нотатки
-                note_id = input(">>>Введіть ID нотатки, до якої хочете додати тег:")
-                # Запрашуємо тег
-                tag = input(">>>Введіть тег:")
-                # Додаємо тег в нотатку
-                note_manager.add_tag(int(note_id), tag)
-                print("Тег додано")
-                note_manager.show_data()
+                while True:
+                    # Запрашуємо id нотатки
+                    note_id = int(input(">>>Введіть ID нотатки, до якої хочете додати тег:"))
+                    if not note_id in note_manager.data.data.keys():
+                        print("Нотатки за таким ID не існує")
+                        continue
+                    # Запрашуємо тег
+                    tag = input(">>>Введіть тег:")
+                    # Додаємо тег в нотатку
+                    note_manager.add_tag(note_id, tag)
+                    print("Тег додано")
+                    note_manager.show_data()
+                    break
 
             elif command_arg == "data":
                 note_manager.show_data()
@@ -64,30 +67,44 @@ def main():
                     note_manager.show_data()
 
             elif command_arg == "edit":
-                print("Виберіть нотатку для редагування")
-                note_id = int(input(">>>ID нотатки:"))
-                note_manager.open_note(note_id)
-                print("Що хочете відредагувати? (info/tag)")
-                user_choice = input(">>>")
-                if user_choice == "info":
-                    new_info = input(">>>Новий текст нотатки:")
-                    note_manager.edit_info(note_id, new_info)
-                elif user_choice == "tag":
-                    tag_index = int(
-                        input(">>>Введіть індекс тегу для редагування (з верху від 0):")
-                    )
-                    new_tag = input(">>>Нова назва тегу:")
-                    note_manager.edit_tag(note_id, tag_index, new_tag)
-                else:
-                    continue
-                print("Нотатку відредаговано")
-                note_manager.open_note(note_id)
+                while True:
+                    note_manager.show_data()
+                    print("Виберіть нотатку для редагування")
+                    note_id = int(input(">>>ID нотатки:"))
+                    if not note_id in note_manager.data.data.keys():
+                        print("Нотатки за таким ID не існує")
+                        continue
+                    note_manager.open_note(note_id)
+                    print("Що хочете відредагувати? (info/tag)")
+                    user_choice = input(">>>")
+                    if user_choice == "info":
+                        new_info = input(">>>Новий текст нотатки:")
+                        note_manager.edit_info(note_id, new_info)
+                    elif user_choice == "tag":
+                        tag_index = int(
+                            input(">>>Введіть індекс тегу для редагування (з верху від 0):")
+                        )
+                        if not tag_index in range(0, len(note_manager.data.data[note_id].tags)):
+                            print("Не існує тегу за таким індексом")
+                            continue
+                        new_tag = input(">>>Нова назва тегу:")
+                        note_manager.edit_tag(note_id, tag_index, new_tag)
+                    else:
+                        break
+                    print("Нотатку відредаговано")
+                    note_manager.open_note(note_id)
+                    break
 
             elif command_arg == "open":
                 note_manager.show_data()
-                print("Виберіть нотатку (ID)")
-                note_id = int(input(">>>"))
-                note_manager.open_note(note_id)
+                while True:
+                    print("Виберіть нотатку (ID)")
+                    note_id = int(input(">>>"))
+                    if not note_id in note_manager.data.data.keys():
+                        print("Нотатки за таким ID не існує")
+                        continue
+                    note_manager.open_note(note_id)
+                    break
 
             elif command_arg == "search":
                 print("Впишіть тег для пошуку нотаток (можна перші літери)")

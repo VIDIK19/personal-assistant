@@ -1,6 +1,6 @@
 from src.note_manager import NoteManager
-from src import file_manager
-
+from src.file_manager import sort_folder
+from pathlib import Path
 
 def main():
     note_manager = NoteManager()
@@ -93,20 +93,23 @@ def main():
             else:
                 print("Нема такої команди")
 
+        
+        elif command == "file":
+            if command_arg == 'sort_folder':
+                print('Введіть шлях до папки:')
+                path_str = input(">>>")
+                path = Path(path_str)
+                
+                if path.exists() and path.is_dir():
+                    sort_folder(path)
+                    print('Файли відсортовано')
+                else:
+                    print(f'Папки за шляхом {path_str} не існує або це не папка.')
         else:
             print("Нема такого менеджера")
         # Це маленька чатсина функціоналу - просто приклад
-
-        try:
-            path = Path(sys.argv[1])
-        except IndexError:
-            return "No path to folder"
-        if not path.exists():
-            return "Folder does not exists"
-
-        sort_folder(path)
-
-        return "All ok"
+        
+        
 
 
 if __name__ == "__main__":

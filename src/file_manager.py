@@ -1,5 +1,4 @@
 from pathlib import Path
-import sys
 from tabulate import tabulate
 
 CATEGORIES = {

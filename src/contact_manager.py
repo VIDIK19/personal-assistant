@@ -427,8 +427,6 @@ class ContactManager:
         # Додає дані до таблиці
             table_data.append([record.name.value, phone_numbers_str, "; ".join(str(email) for email in record.emails), record.birthday.value if record.birthday else ""])
         headers = ["Ім'я", "Номери телефонів", "Електронна пошта", "День народження"]
-    
-    # Видаліть зазначення вирівнювання (colalign) з tabulate
         table_str = tabulate(table_data, headers, tablefmt="grid", colalign=("center", "center", "center", "center"))
         print(table_str)
 

@@ -1,9 +1,13 @@
 from src.note_manager import NoteManager
+from src.contact_manager import ContactManager
 from src.file_manager import sort_folder
 from pathlib import Path
 
 def main():
     note_manager = NoteManager()
+    contact_manager = ContactManager()
+
+    contact_manager.create_table()
 
     while True:
         user_input = input(">>>")
@@ -92,6 +96,57 @@ def main():
 
             else:
                 print("Нема такої команди")
+
+        elif command == 'contact':           
+            if command_arg == 'add':
+                name = input("Ім'я контакту: ")
+                phone = input("Номер телефону контакту: ")
+                email = input("Email контакту: ")
+                birthday = input("Дата народження контакту (формат: РРРР-ММ-ДД): ")
+                contact_manager.add_contact(name, phone, email, birthday)
+                print(f"Контакт {name} додано.")
+
+            elif command_arg == 'edit_phone':
+                name = input("Ім'я контакту для редагування номера телефону: ")
+                old_phone = input("Старий номер телефону: ")
+                new_phone = input("Новий номер телефону: ")
+
+                try:
+                    contact_manager.edit_phone(name, old_phone, new_phone)
+                    print(f"Номер телефону '{old_phone}' в контакту '{name}' відредаговано на '{new_phone}'.")
+                except ValueError as e:
+                    print(f"Помилка: {e}")
+
+            elif command_arg == 'edit_email':
+                name = input("Ім'я контакту для редагування email: ")
+                old_email = input("Старий email: ")
+                new_email = input("Новий email: ")
+                record = contact_manager.find(name)  
+                if record:
+                    contact_manager.edit_email(record, old_email, new_email)
+                else:
+                    print(f"Контакт з ім'ям {name} не знайдено.")
+ 
+            elif command_arg == 'search':
+                name = input("Ім'я контакту для пошуку: ")
+                contacts = contact_manager.search_contact(name)
+                for contact in contacts:
+                    print(contact)
+
+            elif command_arg == 'show_all_data':
+                records = contact_manager.retrieve_records()
+                if not records:
+                    print("Немає даних для відображення.")
+                else:
+                    contact_manager.display_records(records)
+
+            elif command_arg == 'del_contact':
+                name_to_delete = input("Введіть ім'я користувача, дані якого потрібно видалити: ")
+                contact_manager.delete_contact(name_to_delete)
+                print(f"Контакт {name_to_delete} видалено.")
+
+            else: 
+                print('Нема такої команди для менеджера контактів')
 
         
         elif command == "file":

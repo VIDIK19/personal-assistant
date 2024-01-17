@@ -1,5 +1,5 @@
 from src.note_manager import NoteManager
-from src.contact_manager import ContactManager, AddressBookDatabase, Name, Phone, Email, Birthday
+from src.contact_manager import ContactManager
 from src.file_manager import sort_folder
 from pathlib import Path
 
@@ -7,7 +7,7 @@ def main():
     note_manager = NoteManager()
     contact_manager = ContactManager()
 
-    AddressBookDatabase.create_table()
+    contact_manager.create_table()
     while True:
         user_input = input(">>>")
 
@@ -117,48 +117,11 @@ def main():
         elif command == 'contact':           
             if command_arg == 'add':
                 name = input("Ім'я контакту: ")
-                name = Name(name)
-                phone = None
-                email = None
-                birthday = None
-                while True:
-                    try:
-                        phone = input("Номер телефону контакту: ")
-                        phone = Phone(phone)
-                        break
-                    except ValueError:
-                        print("Номер телефону повинен бути десятизначним рядком із цифр")
-                        continue
-                while True:
-                    try:
-                        email = input("Email контакту: ")
-                        email = Email(email)
-                        break
-                    except ValueError:
-                        print("Не дійсна електронна адреса")
-                        continue
-                while True:
-                    try:
-                        birthday = input("Дата народження контакту (формат: РРРР-ММ-ДД): ")
-                        birthday = Birthday(birthday)
-                        break
-                    except ValueError:
-                        print("Неправильний формат даних, повинно бути YYYY-MM-DD")
-                        continue
+                phone = input("Номер телефону контакту: ")
+                email = input("Email контакту: ")
+                birthday = input("Дата народження контакту (формат: РРРР-ММ-ДД): ")
                 contact_manager.add_contact(name, phone, email, birthday)
                 print(f"Контакт {name} додано.")
-
-            elif command_arg == 'show_all':
-                records = contact_manager.retrieve_records()
-                if not records:
-                    print("Немає даних для відображення.")
-                else:
-                    contact_manager.display_records(records)
-
-            elif command_arg == 'del_contact':
-                name_to_delete = input("Введіть ім'я користувача, дані якого потрібно видалити: ")
-                contact_manager.delete_contact(name_to_delete)
-                print(f"Контакт {name_to_delete} видалено.")
 
             elif command_arg == 'edit_phone':
                 name = input("Ім'я контакту для редагування номера телефону: ")
@@ -187,8 +150,17 @@ def main():
                 for contact in contacts:
                     print(contact)
 
-            elif command_arg == "soon_birth":
-                contact_manager.display_upcoming_birthdays()
+            elif command_arg == 'show_all_data':
+                records = contact_manager.retrieve_records()
+                if not records:
+                    print("Немає даних для відображення.")
+                else:
+                    contact_manager.display_records(records)
+
+            elif command_arg == 'del_contact':
+                name_to_delete = input("Введіть ім'я користувача, дані якого потрібно видалити: ")
+                contact_manager.delete_contact(name_to_delete)
+                print(f"Контакт {name_to_delete} видалено.")
 
             else: 
                 print('Нема такої команди для менеджера контактів')

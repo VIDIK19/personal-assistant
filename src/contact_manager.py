@@ -87,26 +87,27 @@ latest_id = 0
 
 class Record:
    
-    def __init__(self, name, birthday=None):
+    def __init__(self, name:Name, birthday:Birthday=None):
         global latest_id  # Use the global variable
         latest_id += 1  # Increment the latest_id for each new contact
         self.id = latest_id
-        self.name = Name(name)
+        self.name = name
         self.phones = []
         self.emails = []
-        self.birthday = Birthday(birthday) if birthday else None
+        self.birthday = birthday if birthday else None
 
     # def set_id(self, contact_id):
         
     #     self.id = contact_id
 
     # Додає номер телефону до запису
-    def add_phone(self, phone):
-        if phone.isdigit() and len(phone) == 10:
-            new_phone = Phone(phone)
-            self.phones.append(new_phone)
-        else:
-            print(f"Некоректний номер телефону: {phone}. Номер телефону повинен містити 10 цифр.")
+    def add_phone(self, phone:Phone):
+        self.phones.append(phone)
+        # if phone.isdigit() and len(phone) == 10:
+        #     new_phone = Phone(phone)
+        #     self.phones.append(new_phone)
+        # else:
+        #     print(f"Некоректний номер телефону: {phone}. Номер телефону повинен містити 10 цифр.")
 
     # Видаляє номер телефону з запису
     def remove_phone(self, phone):
@@ -138,9 +139,9 @@ class Record:
         return None  # Повертає None, якщо номер не знайдено
     
     # Додає електронну адресу до запису
-    def add_email(self, email):
-        new_email = Email(email)
-        self.emails.append(new_email)
+    def add_email(self, email:Email):
+        # new_email = Email(email)
+        self.emails.append(email)
 
     # Редагує існуючу електронну адресу в записі
     def edit_email(self, old_email, new_email):
@@ -362,25 +363,12 @@ class ContactManager:
         # record_id = self.execute_query(query, parameters, get_id=True)
         # record.set_id(record_id)
     
-    def add_contact(self, name, phone, email, birthday):
+    def add_contact(self, name:Name, phone:Phone, email:Email, birthday:Birthday):
         new_contact = Record(name, birthday)
         new_contact.add_phone(phone)
         new_contact.add_email(email)
         self.address_book.add_record(new_contact)
         self.insert_records()
-
-    def update_contact(self, record):
-        query = "UPDATE contacts SET name=?, birthday=?, phones=?, emails=? WHERE id=?"
-        parameters = (record.name.value, record.birthday.value, "; ".join(record.phones), "; ".join(record.emails), record.id)
-        self.execute_query(query, parameters)
-
-    def generate_contact_id(self):
-        # Генерування унікального ID для контакту, використовуючи логіку зберігання
-        # поточного максимального ID та додавання 1 до нього.
-        if not self.contacts:
-            return 1
-        max_id = max(contact.id for contact in self.contacts)
-        return max_id + 1
     
     def add_name(self, name:str):
         record = Record(name)
@@ -389,20 +377,13 @@ class ContactManager:
     def add_record(self, record):
         self.address_book.add_record(record)
 
-    def edit_contact_phone(self, name, old_phone, new_phone):
-        self.address_book.data[name].edit_phone(old_phone, new_phone)
-        self.insert_records()
+    def edit_phone(self, name, old_phone, new_phone):
+        contact = self.find(name)
+        contact.edit_phone(old_phone, new_phone)
 
+    def edit_email(self, record, old_email, new_email):
+        record.edit_email(old_email, new_email)
 
-    def edit_contact_email(self, name, old_email, new_email):
-        try:
-            self.address_book.data[name].edit_email(old_email, new_email)
-            # self.insert_records()
-        except ValueError as e:
-            print(f"Помилка редагування електронної адреси: {e}")
-        self.insert_records()
-        
-        
     def find(self, name):
         name = name.lower().strip()  # відсікаємо пробіли та переводимо в нижній регістр
         for record in self.records.values():

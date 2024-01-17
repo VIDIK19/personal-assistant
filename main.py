@@ -1,5 +1,5 @@
 from src.note_manager import NoteManager
-from src.contact_manager import ContactManager
+from src.contact_manager import ContactManager, AddressBookDatabase, Name, Phone, Email, Birthday
 from src.file_manager import sort_folder
 from pathlib import Path
 
@@ -7,7 +7,7 @@ def main():
     note_manager = NoteManager()
     contact_manager = ContactManager()
 
-    contact_manager.create_table()
+    AddressBookDatabase.create_table()
     while True:
         user_input = input(">>>")
 
@@ -117,9 +117,34 @@ def main():
         elif command == 'contact':           
             if command_arg == 'add':
                 name = input("Ім'я контакту: ")
-                phone = input("Номер телефону контакту: ")
-                email = input("Email контакту: ")
-                birthday = input("Дата народження контакту (формат: РРРР-ММ-ДД): ")
+                name = Name(name)
+                phone = None
+                email = None
+                birthday = None
+                while True:
+                    try:
+                        phone = input("Номер телефону контакту: ")
+                        phone = Phone(phone)
+                        break
+                    except ValueError:
+                        print("Номер телефону повинен бути десятизначним рядком із цифр")
+                        continue
+                while True:
+                    try:
+                        email = input("Email контакту: ")
+                        email = Email(email)
+                        break
+                    except ValueError:
+                        print("Не дійсна електронна адреса")
+                        continue
+                while True:
+                    try:
+                        birthday = input("Дата народження контакту (формат: РРРР-ММ-ДД): ")
+                        birthday = Birthday(birthday)
+                        break
+                    except ValueError:
+                        print("Неправильний формат даних, повинно бути YYYY-MM-DD")
+                        continue
                 contact_manager.add_contact(name, phone, email, birthday)
                 print(f"Контакт {name} додано.")
 

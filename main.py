@@ -1,5 +1,5 @@
 from src.note_manager import NoteManager
-from src.contact_manager import ContactManager
+from src.contact_manager import ContactManager, Name, Email, Phone, Birthday, PhoneError, BirthdayError, EmailError, Record
 from src.file_manager import sort_folder
 from pathlib import Path
 
@@ -7,7 +7,6 @@ def main():
     note_manager = NoteManager()
     contact_manager = ContactManager()
 
-    contact_manager.create_table()
     while True:
         user_input = input(">>>")
 
@@ -116,56 +115,151 @@ def main():
 
         elif command == 'contact':           
             if command_arg == 'add':
-                name = input("Ім'я контакту: ")
-                phone = input("Номер телефону контакту: ")
-                email = input("Email контакту: ")
-                birthday = input("Дата народження контакту (формат: РРРР-ММ-ДД): ")
-                contact_manager.add_contact(name, phone, email, birthday)
-                print(f"Контакт {name} додано.")
+                print("Впишіть ім'я контакту")
+                name = input(">>>")
+                name = Name(name)
+                phone = None
+                email = None
+                birthday = None
+                print("Впишіть телефон контакту")
+                while True:
+                    try:
+                        phone = input('>>>')
+                        phone = Phone(phone)
+                        break
+                    except PhoneError:
+                        print("Телефон має бути десятизначним та повністю із цифр")
+                        continue
+                print('Впишіть email контакту (опціонально)')
+                while True:
+                    try:
+                        email = input(">>>")
+                        if email == '':
+                            break
+                        email = Email(email)
+                        break
+                    except EmailError:
+                        print('Недійсна електронна пошта, спробуйте ще')
+                        continue
+                print('Впишіть день народження (опціонально)')
+                while True:
+                    try:
+                        birthday = input('>>>')
+                        if birthday == '':
+                            break
+                        birthday = Birthday(birthday)
+                        break
+                    except BirthdayError:
+                        print('Недійсний формат дня народження, треба YYYY-MM-DD')
+                record = Record(name, phone, email, birthday)
+                contact_manager.add_record(record)
+                contact_manager.show_data()
+            elif command_arg == 'show_data':
+                contact_manager.show_data()
 
-            elif command_arg == 'edit_phone':
-                name = input("Ім'я контакту для редагування номера телефону: ")
-                old_phone = input("Старий номер телефону: ")
-                new_phone = input("Новий номер телефону: ")
+            elif command_arg == 'clear':
+                print('Ви впевнені, що хочете очистити список ВСІХ контактів? (yes/так)')
+                qst = input('>>>')
+                if qst == "yes":
+                    contact_manager.clear_data()
 
-                try:
-                    contact_manager.edit_phone(name, old_phone, new_phone)
-                    print(f"Номер телефону '{old_phone}' в контакту '{name}' відредаговано на '{new_phone}'.")
-                except ValueError as e:
-                    print(f"Помилка: {e}")
-
-            elif command_arg == 'edit_email':
-                name = input("Ім'я контакту для редагування email: ")
-                old_email = input("Старий email: ")
-                new_email = input("Новий email: ")
-                record = contact_manager.find(name)  
-                if record:
-                    contact_manager.edit_email(record, old_email, new_email)
-                else:
-                    print(f"Контакт з ім'ям {name} не знайдено.")
- 
+            elif command_arg == 'delete':
+                contact_manager.show_data()
+                print('Який контакт бажаєте видалити? (Впишіть ID)')
+                while True:
+                    record_id = input('>>>')
+                    try:
+                        contact_manager.delete_record(int(record_id))
+                        print("Контакт видалено.")
+                        break
+                    except KeyError:
+                        print("Контакту за таким ID немаєю")
+                        continue
+            elif command_arg == 'edit':
+                while True:
+                    print('Впишіть ID нотатки')
+                    record_id = input('>>>')
+                    if record_id.isdigit():
+                        while True:
+                            print('Що хочете зробити? (delete_phone | add_phone | edit_birthday | delete_email | add_email )')
+                            qst = input(">>>")
+                            if qst == 'delete_phone':
+                                print('Введіть індекс телефону (з верху від 0)')
+                                while True:
+                                    phone_ind = input(">>>")
+                                    if not phone_ind.isdigit():
+                                        print('Індекс має бути цифрою')
+                                        continue
+                                    phone_ind = int(phone_ind)
+                                    try:
+                                        contact_manager.delete_phone(record_id, phone_ind)
+                                    except KeyError:
+                                        print('нема такого індексу')
+                                        continue
+                                    break
+                                break
+                            elif qst == 'add_phone':
+                                print("Введіть номер телефону, який хочете додати")
+                                while True:
+                                    phone = input('>>>')
+                                    try:
+                                        phone = Phone(phone)
+                                        contact_manager.add_phone(phone)
+                                        break
+                                    except PhoneError:
+                                        print("Телефон має бути десятизначним та повністю із цифр")
+                                        continue
+                                break
+                            elif qst == 'edit_birthday':
+                                print("Введіть нову дату народження")
+                                while True:
+                                    try:
+                                        new_birthday = input('>>>')
+                                        new_birthday = Birthday(new_birthday)
+                                        contact_manager.edit_birthday(record_id, new_birthday)
+                                        break
+                                    except BirthdayError:
+                                        print('Недійсний формат дня народження, треба YYYY-MM-DD')
+                                        continue
+                            elif qst == 'delete_email':
+                                print('Впишіть індекст імейлу, який хочете видалити (з верху від 0)')
+                                while True:
+                                    ind = input('>>>')
+                                    if not ind.isdigit():
+                                        print('Індекс має бути цифрою')
+                                        continue
+                                    try:
+                                        contact_manager.delete_email(record_id, ind)
+                                        break
+                                    except IndexError:
+                                        print('нема такого індексу')
+                                        continue
+                            elif qst == 'add_email':
+                                print("Впишіть новий імейл")
+                                while True:
+                                    new_email = input('>>>')
+                                    try:
+                                        new_email = Email(new_email)
+                                        contact_manager.add_email(new_email)
+                                        break
+                                    except EmailError:
+                                        print('Недійсна електронна пошта, спробуйте ще')
+                                        continue
+                                        
+                            else:
+                                print('Такої команди нема') 
+                                continue
+                        break
+                    else:
+                        print('ID має бути цифрою')
+                        continue
             elif command_arg == 'search':
-                name = input("Ім'я контакту для пошуку: ")
-                contacts = contact_manager.search_contact(name)
-                for contact in contacts:
-                    print(contact)
-
-            elif command_arg == 'show_all_data':
-                records = contact_manager.retrieve_records()
-                if not records:
-                    print("Немає даних для відображення.")
-                else:
-                    contact_manager.display_records(records)
-
-            elif command_arg == 'del_contact':
-                name_to_delete = input("Введіть ім'я користувача, дані якого потрібно видалити: ")
-                contact_manager.delete_contact(name_to_delete)
-                print(f"Контакт {name_to_delete} видалено.")
-
+                print("Впишіть ім'я для пошуку")    
+                name = input('>>>')
+                contact_manager.name_search(name)
             else: 
-                print('Нема такої команди для менеджера контактів')
+                print('Нема такої команди для менеджеру контактів')        
 
-        
         elif command == "file":
             if command_arg == 'sort_folder':
                 print('Введіть шлях до папки:')

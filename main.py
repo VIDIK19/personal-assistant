@@ -123,6 +123,18 @@ def main():
                 contact_manager.add_contact(name, phone, email, birthday)
                 print(f"Контакт {name} додано.")
 
+            elif command_arg == 'show_all':
+                records = contact_manager.retrieve_records()
+                if not records:
+                    print("Немає даних для відображення.")
+                else:
+                    contact_manager.display_records(records)
+
+            elif command_arg == 'del_contact':
+                name_to_delete = input("Введіть ім'я користувача, дані якого потрібно видалити: ")
+                contact_manager.delete_contact(name_to_delete)
+                print(f"Контакт {name_to_delete} видалено.")
+
             elif command_arg == 'edit_phone':
                 name = input("Ім'я контакту для редагування номера телефону: ")
                 old_phone = input("Старий номер телефону: ")
@@ -150,17 +162,8 @@ def main():
                 for contact in contacts:
                     print(contact)
 
-            elif command_arg == 'show_all_data':
-                records = contact_manager.retrieve_records()
-                if not records:
-                    print("Немає даних для відображення.")
-                else:
-                    contact_manager.display_records(records)
-
-            elif command_arg == 'del_contact':
-                name_to_delete = input("Введіть ім'я користувача, дані якого потрібно видалити: ")
-                contact_manager.delete_contact(name_to_delete)
-                print(f"Контакт {name_to_delete} видалено.")
+            elif command_arg == "soon_birth":
+                contact_manager.display_upcoming_birthdays()
 
             else: 
                 print('Нема такої команди для менеджера контактів')

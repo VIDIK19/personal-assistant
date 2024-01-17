@@ -1,14 +1,14 @@
 import re
 import os
 from collections import UserDict
-from datetime import datetime, timedelta
+from datetime import datetime
 import pickle
 import sqlite3
 from tabulate import tabulate
 
 current_file_path = os.path.abspath(__file__)
 project_root = os.path.dirname(os.path.dirname(current_file_path))
-DATA_PATH = f'{project_root}\database\\contacts.db'
+DATA_PATH = os.path.join(project_root, 'database', 'contacts.db')
 
 # Базовий клас для зберігання значень полів
 class Field:
@@ -42,7 +42,6 @@ class Name(Field):
 class Phone(Field):
     @staticmethod
     def is_valid_phone(value):
-        """Повертає булеве значення з перевірки"""
         return value.isdigit() and len(value) == 10
 
     def __init__(self, value):
@@ -50,25 +49,15 @@ class Phone(Field):
             raise ValueError("Номер телефону повинен бути десятизначним рядком із цифр")
         super().__init__(value)
 
-    def __set__(self, instance, value):
-        if not Phone.is_valid_phone(value):
-            raise ValueError("Номер телефону повинен бути десятизначним рядком із цифр")
-        super().__set__(instance, value)
-
-
-# Клас, який представляє поле електронної пошти, що успадковується від Field
 class Email(Field):
     @classmethod
     def is_valid(cls, value):
-        try:
-            if re.match(r'[a-zA-Z][\w.]+@\w{2,}\.\w{2,3}', value) or value == '':
-                return True
-        except ValueError:
-            return False
+        if re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', value) or value == '':
+            return True
+        return False
 
     def __init__(self, value=''):
         if not Email.is_valid(value):
-            print(f'Некоректна електронна пошта! Будь ласка, введіть правильну електронну адресу.')
             raise ValueError(f'Не дійсна електронна адреса')
         super().__init__(value)
 
@@ -341,95 +330,80 @@ class AddressBookDatabase:
 
 # Клас ContactManager:
 class ContactManager:
-    def __init__(self, db_path=f'{project_root}\database\\contacts.db'):
+    def __init__(self, db_path=DATA_PATH):
         self.db_path = db_path
         self.connection = sqlite3.connect(self.db_path)
         self.cursor = self.connection.cursor()
         self.address_book = AddressBook()
-        self.records = {}
+        self.load_records()
+
+    def load_records(self):
+        try:
+            rows = self.retrieve_records()
+            for row in rows:
+                name, birthday, phones, emails = row
+                record = Record(name, birthday)
+                for phone in phones.split("; "):
+                    record.add_phone(phone)
+                for email in emails.split("; "):
+                    record.add_email(email)
+                self.address_book.add_record(record)
+        except Exception as e:
+            print(f"Помилка при завантаженні записів: {e}")
 
     def create_table(self):
         AddressBookDatabase.create_table()
 
     def execute_query(self, query, parameters=None):
-        if parameters is None:
-            self.cursor.execute(query)
-        else:
-            self.cursor.execute(query, parameters)
-            self.connection.commit()
-        return self.cursor.fetchall()
-    
+        try:
+            if parameters is None:
+                self.cursor.execute(query)
+            else:
+                self.cursor.execute(query, parameters)
+                self.connection.commit()
+            return self.cursor.fetchall()
+        except sqlite3.DatabaseError as e:
+            print(f"Помилка бази даних: {e}")
+            return []
+        
     def add_contact(self, name, phone, email, birthday):
-        new_contact = Record(name, birthday)
-        new_contact.add_phone(phone)
-        new_contact.add_email(email)
-        self.address_book.add_record(new_contact)
-        self.insert_records()
-    
-    def add_name(self, name:str):
-        record = Record(name)
-        self.add_name(record)
+            new_contact = Record(name, birthday)
+            new_contact.add_phone(phone)
+            new_contact.add_email(email)
+            self.address_book.add_record(new_contact)
+            self.insert_records()
+        
+    def add_name(self, name):
+            record = Record(name)
+            self.add_record(record)
 
     def add_record(self, record):
-        self.address_book.add_record(record)
-
-    def edit_phone(self, name, old_phone, new_phone):
-        contact = self.find(name)
-        contact.edit_phone(old_phone, new_phone)
-
-    def edit_email(self, record, old_email, new_email):
-        record.edit_email(old_email, new_email)
-
-    def find(self, name):
-        name = name.lower().strip()  # відсікаємо пробіли та переводимо в нижній регістр
-        for record in self.records.values():
-            if record.name.lower().strip() == name:
-                return record
-        return None
+            self.address_book.add_record(record)
+            self.insert_records()
 
     def delete_contact(self, name):
-        # Видалення контакту з адресної книги
-        self.address_book.delete_record(name)
-        # Оновлення бази даних після видалення
-        self.insert_records()
-
-    def create_table(self):
-        AddressBookDatabase.create_table()
+            self.address_book.delete(name)
+            self.insert_records()
 
     def insert_records(self):
-        AddressBookDatabase.insert_records(self.address_book.data.values())
+        AddressBookDatabase.insert_records(list(self.address_book.data.values()))
 
     def retrieve_records(self):
-        return AddressBookDatabase.retrieve_records()
-    
-    def upcoming_birthdays(self, days=7):
-        query = "SELECT * FROM contacts WHERE strftime('%m-%d', birthday) BETWEEN strftime('%m-%d', date('now')) AND strftime('%m-%d', date('now', ?))"
-        parameters = (f'{days} days', )
-        result = self.execute_query(query, parameters)
-        return result
+        try:
+            self.cursor.execute("SELECT * FROM contacts")
+            return self.cursor.fetchall()
+        except sqlite3.DatabaseError as e:
+            print(f"Помилка бази даних при отриманні записів: {e}")
+            return []
 
-    def display_records(self, rows):
-        table_data = []
-        for row in rows:
-            name, birthday, phones, emails = row
-            record = Record(name, birthday)
-        # Обробляє номери телефонів і електронні листи
-            phones = phones.split("; ")
-            emails = emails.split("; ")
-
-            for phone in phones:
-                record.add_phone(phone)
-            for email in emails:
-                record.add_email(email)
-
-        # Створює список номерів телефонів у вигляді рядків
-            phone_numbers_str = "; ".join(str(phone) for phone in record.phones)
-        # Додає дані до таблиці
-            table_data.append([record.name.value, phone_numbers_str, "; ".join(str(email) for email in record.emails), record.birthday.value if record.birthday else ""])
-        headers = ["Ім'я", "Номери телефонів", "Електронна пошта", "День народження"]
-        table_str = tabulate(table_data, headers, tablefmt="grid", colalign=("center", "center", "center", "center"))
-        print(table_str)
+    def display_records(self):
+            table_data = []
+            for record in self.address_book.data.values():
+                phone_numbers_str = "; ".join(str(phone) for phone in record.phones)
+                table_data.append([record.name.value, phone_numbers_str, "; ".join(str(email) for email in record.emails), record.birthday.value if record.birthday else ""])
+                headers = ["Ім'я", "Номери телефонів", "Електронна пошта", "День народження"]
+            table_str = tabulate(table_data, headers, tablefmt="grid", colalign=("center", "center", "center", "center"))
+            print(table_str)
 
     def show_all_data(self):
-        records = self.retrieve_records()
-        self.display_records(records)
+            self.display_records()
